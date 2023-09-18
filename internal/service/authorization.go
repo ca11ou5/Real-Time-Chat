@@ -5,6 +5,7 @@ import (
 	"realtimeChat/internal/domain"
 	"realtimeChat/internal/repository"
 	"realtimeChat/pkg/hashing"
+	"realtimeChat/pkg/jwt"
 )
 
 type AuthorizationService struct {
@@ -25,16 +26,21 @@ func (s *AuthorizationService) CreateUser(user domain.User) (int, error) {
 	return s.repo.CreateUser(user)
 }
 
-func (s *AuthorizationService) CheckUser(username, password string) (int, error) {
+func (s *AuthorizationService) CheckUser(username, password string) (int, string, error) {
 	userID, hash, err := s.repo.GetUser(username)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
 	ok := hashing.CheckPasswordHash(password, hash)
 	if !ok {
-		return 0, errors.New("wrong password")
+		return 0, "", errors.New("wrong password")
 	}
 
-	return userID, err
+	token, err := jwt.GenerateJWT(userID)
+	if err != nil {
+		return 0, "", err
+	}
+
+	return userID, token, err
 }

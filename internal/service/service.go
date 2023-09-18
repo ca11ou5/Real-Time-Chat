@@ -7,7 +7,7 @@ import (
 
 type Authorization interface {
 	CreateUser(user domain.User) (int, error)
-	CheckUser(username, password string) (int, error)
+	CheckUser(username, password string) (int, string, error)
 }
 
 type Service struct {

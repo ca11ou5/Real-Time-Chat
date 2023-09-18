@@ -36,11 +36,17 @@ func (h *Handler) signIn(c *gin.Context) {
 		return
 	}
 
-	userID, err := h.service.Authorization.CheckUser(input.Username, input.Password)
+	userID, token, err := h.service.Authorization.CheckUser(input.Username, input.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
+	c.SetCookie("authorization", token, 3600*6, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{"id": userID})
+}
+
+func (h *Handler) logout(c *gin.Context) {
+	c.SetCookie("authorization", "", -1, "", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "logout successful"})
 }

@@ -17,6 +17,11 @@ func main() {
 		log.Fatal("failed to initialize config")
 	}
 
+	//Local storage for websockets
+	hub := http.NewHub()
+	wsHandler := http.NewWSHandler(hub)
+	go hub.Run()
+
 	//Database, Repository, Service, Handler initialization
 	db := postgres.NewDatabase()
 	repo := repository.NewRepository(db)
@@ -24,7 +29,7 @@ func main() {
 	hand := http.NewHandler(serv)
 
 	//HTTP Server
-	srv := server.NewServer(viper.GetString("server.port"), hand.InitRoutes())
+	srv := server.NewServer(viper.GetString("server.port"), hand.InitRoutes(wsHandler))
 	srv.Run()
 }
 
